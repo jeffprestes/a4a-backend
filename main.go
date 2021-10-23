@@ -7,7 +7,8 @@ import (
 func main() {
 	server := macaron.Classic()
 	server.Use(macaron.Renderer())
-	server.Get("/", handlerMain)
+	server.Use(macaron.Static("static"))
+	// server.Get("/", handlerMain)
 	server.Get("/nft", handleQueryNFTItem)
 	server.Run()
 }
