@@ -1,11 +1,155 @@
 package main
 
+import (
+	"encoding/json"
+	"fmt"
+	"math/big"
+	"time"
+)
+
 // NFTItemResponse is the response to NFT Item query
 type NFTItemResponse struct {
 	ID             string
-	GLTFFile       string
-	Author         string
+	CoordX         string
+	CoordY         string
 	OpenseaDetails OpenseaData
+	RaribleDetails RaribleData
+}
+
+type RaribleData struct {
+	ID            string        `json:"id"`
+	Contract      string        `json:"contract"`
+	TokenID       int           `json:"tokenId"`
+	Unlockable    bool          `json:"unlockable"`
+	Creators      []Creators    `json:"creators"`
+	Supply        int           `json:"supply"`
+	LazySupply    int           `json:"lazySupply"`
+	Owners        []string      `json:"owners"`
+	Royalties     []interface{} `json:"royalties"`
+	Date          time.Time     `json:"date"`
+	Pending       []interface{} `json:"pending"`
+	Meta          Meta          `json:"meta"`
+	BestSellOrder BestSellOrder `json:"bestSellOrder"`
+	BestBidOrder  BestBidOrder  `json:"bestBidOrder"`
+	TotalStock    int           `json:"totalStock"`
+	Sellers       int           `json:"sellers"`
+}
+
+type Creators struct {
+	Account string `json:"account"`
+	Value   int    `json:"value"`
+}
+
+type Attributes struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type URL struct {
+	ORIGINAL string `json:"ORIGINAL"`
+	BIG      string `json:"BIG"`
+	PREVIEW  string `json:"PREVIEW"`
+}
+
+type PREVIEW struct {
+	Type   string `json:"type"`
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
+}
+
+type MetaPreview struct {
+	PREVIEW PREVIEW `json:"PREVIEW"`
+}
+
+type Image struct {
+	URL  URL         `json:"url"`
+	Meta MetaPreview `json:"meta"`
+}
+
+type Meta struct {
+	Name        string       `json:"name"`
+	Description string       `json:"description"`
+	Attributes  []Attributes `json:"attributes"`
+	Image       Image        `json:"image"`
+}
+
+type AssetType struct {
+	AssetClass string `json:"assetClass"`
+	Contract   string `json:"contract"`
+	TokenID    int    `json:"tokenId"`
+}
+
+type Make struct {
+	AssetType    AssetType `json:"assetType"`
+	Value        int       `json:"value"`
+	ValueDecimal float64   `json:"valueDecimal"`
+}
+
+type Take struct {
+	AssetType    AssetType `json:"assetType"`
+	Value        BigInt    `json:"value"`
+	ValueDecimal float64   `json:"valueDecimal"`
+}
+
+type PriceHistory struct {
+	Date      time.Time `json:"date"`
+	MakeValue BigInt    `json:"makeValue"`
+	TakeValue BigInt    `json:"takeValue"`
+}
+
+type OriginFees struct {
+	Account string `json:"account"`
+	Value   int    `json:"value"`
+}
+
+type Data struct {
+	DataType   string        `json:"dataType"`
+	Payouts    []interface{} `json:"payouts"`
+	OriginFees []OriginFees  `json:"originFees"`
+}
+
+type BestSellOrder struct {
+	Type           string         `json:"type"`
+	Maker          string         `json:"maker"`
+	Make           Make           `json:"make"`
+	Take           Take           `json:"take"`
+	Fill           int            `json:"fill"`
+	FillValue      BigInt         `json:"fillValue"`
+	MakeStock      int            `json:"makeStock"`
+	MakeStockValue int            `json:"makeStockValue"`
+	Cancelled      bool           `json:"cancelled"`
+	Salt           string         `json:"salt"`
+	Signature      string         `json:"signature"`
+	CreatedAt      time.Time      `json:"createdAt"`
+	LastUpdateAt   time.Time      `json:"lastUpdateAt"`
+	Pending        []interface{}  `json:"pending"`
+	Hash           string         `json:"hash"`
+	MakeBalance    int            `json:"makeBalance"`
+	MakePriceUsd   float64        `json:"makePriceUsd"`
+	PriceHistory   []PriceHistory `json:"priceHistory"`
+	Data           Data           `json:"data"`
+}
+
+type BestBidOrder struct {
+	Type           string         `json:"type"`
+	Maker          string         `json:"maker"`
+	Make           Make           `json:"make"`
+	Take           Take           `json:"take"`
+	Fill           int            `json:"fill"`
+	FillValue      int            `json:"fillValue"`
+	MakeStock      int64          `json:"makeStock"`
+	MakeStockValue float64        `json:"makeStockValue"`
+	Cancelled      bool           `json:"cancelled"`
+	Salt           string         `json:"salt"`
+	Signature      string         `json:"signature"`
+	CreatedAt      time.Time      `json:"createdAt"`
+	LastUpdateAt   time.Time      `json:"lastUpdateAt"`
+	Pending        []interface{}  `json:"pending"`
+	Hash           string         `json:"hash"`
+	MakeBalance    int            `json:"makeBalance"`
+	TakePriceUsd   float64        `json:"takePriceUsd"`
+	PriceHistory   []PriceHistory `json:"priceHistory"`
+	Data           Data           `json:"data"`
 }
 
 type OpenseaData struct {
@@ -256,4 +400,21 @@ type LastSale struct {
 type TopOwnerships struct {
 	Owner    Owner  `json:"owner"`
 	Quantity string `json:"quantity"`
+}
+
+type BigInt struct {
+	big.Int
+}
+
+func (i *BigInt) UnmarshalJSON(b []byte) error {
+	var val interface{}
+	err := json.Unmarshal(b, &val)
+	if err != nil {
+		return err
+	}
+	var2 := val.(float64)
+	var3 := fmt.Sprintf("%f", var2)
+	i.SetString(var3, 10)
+
+	return nil
 }
